@@ -1,0 +1,9 @@
+.venv
+__pycache__
+chroma_db
+.vscode
+.env
+app/_pycache__
+app/services/_pycache__
+app/api/_pycache__
+app/core/_pycache__
