@@ -17,6 +17,7 @@ chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 genai_client = genai.Client(api_key=GEMINI_API_KEY)
 
 
+# Dividir el texto en chunks
 def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
     splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", ". ", " ", ""],
@@ -25,6 +26,8 @@ def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
         length_function=len,
     )
     return splitter.split_text(text)
+
+# Generar Embeddings de los chunks
 
 
 def embed_documents(docs: List[str]) -> List[List[float]]:
@@ -35,6 +38,8 @@ def embed_documents(docs: List[str]) -> List[List[float]]:
     )
     return [e.values for e in resp.embeddings]
 
+# Embeddings de la consulta
+
 
 def embed_query(query: str) -> List[float]:
     resp = genai_client.models.embed_content(
@@ -43,6 +48,8 @@ def embed_query(query: str) -> List[float]:
         config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY"),
     )
     return resp.embeddings[0].values
+
+# Generar respuesta
 
 
 def generate_answer(question: str, context_docs: List[str]) -> str:
@@ -54,7 +61,7 @@ def generate_answer(question: str, context_docs: List[str]) -> str:
     Pregunta: {question}
 
     Instrucciones:
-    - Responde muy técnico y como especialista.
+    - Responde muy técnico y como especialista en el tema.
     - Usa SOLO la información del contexto.
     - Responde en español.
     """)
@@ -63,6 +70,8 @@ def generate_answer(question: str, context_docs: List[str]) -> str:
         contents=prompt
     )
     return resp.text
+
+# Crear colección de ChromaDB con los chunks de un tema
 
 
 def create_collection_for_topic(topic: str, collection_name: str, max_chunks: int, chunk_size: int, chunk_overlap: int) -> Dict:
@@ -76,11 +85,15 @@ def create_collection_for_topic(topic: str, collection_name: str, max_chunks: in
 
     collection = chroma_client.get_or_create_collection(collection_name)
     ids = [f"id_{i}" for i in range(len(chunks))]
-    metadatas = [{"source": page.url, "title": page.title, "chunk": i} for i in range(len(chunks))]
+    metadatas = [{"source": page.url, "title": page.title, "chunk": i}
+                 for i in range(len(chunks))]
 
-    collection.add(ids=ids, embeddings=embeddings, documents=chunks, metadatas=metadatas)
+    collection.add(ids=ids, embeddings=embeddings,
+                   documents=chunks, metadatas=metadatas)
 
     return {"source": page.url, "title": page.title, "chunks_indexed": len(chunks)}
+
+# Recuperar los chunks más relevantes
 
 
 def query_collection(collection_name: str, question: str, top_k: int) -> Tuple[List[str], List[dict]]:
