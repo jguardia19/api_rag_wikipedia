@@ -28,8 +28,6 @@ def chunk_text(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
     return splitter.split_text(text)
 
 # Generar Embeddings de los chunks
-
-
 def embed_documents(docs: List[str]) -> List[List[float]]:
     resp = genai_client.models.embed_content(
         model="gemini-embedding-001",
@@ -39,8 +37,6 @@ def embed_documents(docs: List[str]) -> List[List[float]]:
     return [e.values for e in resp.embeddings]
 
 # Embeddings de la consulta
-
-
 def embed_query(query: str) -> List[float]:
     resp = genai_client.models.embed_content(
         model="gemini-embedding-001",
@@ -50,8 +46,6 @@ def embed_query(query: str) -> List[float]:
     return resp.embeddings[0].values
 
 # Generar respuesta
-
-
 def generate_answer(question: str, context_docs: List[str]) -> str:
     context_str = "\n".join(context_docs)
     prompt = textwrap.dedent(f"""
@@ -72,7 +66,6 @@ def generate_answer(question: str, context_docs: List[str]) -> str:
     return resp.text
 
 # Crear colección de ChromaDB con los chunks de un tema
-
 
 def create_collection_for_topic(topic: str, collection_name: str, max_chunks: int, chunk_size: int, chunk_overlap: int) -> Dict:
     page = wikipedia.page(topic, auto_suggest=True)
